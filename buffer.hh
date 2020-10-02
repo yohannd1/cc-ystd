@@ -4,7 +4,7 @@
 #include <utility>
 
 #include "iterator.hh"
-// TODO: #include "allocator.hh"
+#include "allocator.hh"
 
 template <typename T>
 class Buffer {
