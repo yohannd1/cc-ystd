@@ -1,9 +1,10 @@
-// TODO: custom allocators
-
 #ifndef _BUFFER_HH
 
 #include <cstdlib>
 #include <utility>
+
+#include "iterator.hh"
+// TODO: #include "allocator.hh"
 
 template <typename T>
 class Buffer {
@@ -141,6 +142,15 @@ public:
         }
     }
 
+    Iterator<T> begin() {
+        return Iterator<T>::begin(m_buffer, m_element_len);
+    }
+
+    Iterator<T> end() {
+        return Iterator<T>::end(m_buffer, m_element_len);
+    }
+
+    // TODO: Iterator<T> iter() {}
     // TODO: Buffer clone() const
     // TODO: T &operator[](size_t index)
     // TODO: T *get_or_null(size_t index)
