@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include "buffer.hh"
 
 int main() {
@@ -8,15 +8,15 @@ int main() {
     my_buffer.push(20);
     my_buffer.push(30);
 
-    printf("Without iterators: ");
+    std::printf("Without iterators: ");
     for (size_t i = 0; i < my_buffer.len(); i++) {
-        printf("%d ", my_buffer[i]);
+        std::printf("%d ", my_buffer[i]);
     }
-    printf("\n");
+    std::printf("\n");
 
-    printf("With iterators: ");
+    std::printf("With iterators: ");
     for (auto m : my_buffer) {
-        printf("%d ", m);
+        std::printf("%d ", m);
     }
-    printf("\n");
+    std::printf("\n");
 }

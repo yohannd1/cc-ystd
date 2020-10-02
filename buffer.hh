@@ -1,12 +1,11 @@
 #ifndef _BUFFER_HH
+#define _BUFFER_HH
 
-#include <cstdlib>
 #include <utility>
-
 #include "iterator.hh"
 #include "allocator.hh"
 
-template <typename T>
+template <typename T, typename Allocator = StandardAllocator>
 class Buffer {
     T *m_buffer;
     size_t m_true_len;
@@ -29,17 +28,19 @@ class Buffer {
 
         if (m_true_len != new_len) {
             m_true_len = new_len;
+
             if (m_true_len == 0) {
-                // if it's 0, the previous length was greater so we can free the buffer
-                // without worrying if it was null
-                delete[] m_buffer;
+                // if it's 0, the previous length was greater (m_true_len != new_len)
+                // so we can free the buffer without worrying if it was null
+                std::free(m_buffer);
                 m_buffer = nullptr;
             } else {
                 if (m_buffer == nullptr) {
-                    m_buffer = new T[m_true_len];
+                    m_buffer = (T*) std::malloc(m_true_len * sizeof (T));
                     // TODO: null check
                 } else {
-                    m_buffer = (T*) realloc(m_buffer, m_true_len * sizeof (T));
+                    m_buffer = (T*) std::realloc(m_buffer, m_true_len * sizeof (T));
+                    // m_buffer = (T*) Allocator::realloc(m_buffer, m_true_len * sizeof (T));
                     // TODO: null check
                 }
             }
@@ -96,7 +97,7 @@ public:
 
     ~Buffer() {
         if (m_buffer != nullptr) {
-            delete[] m_buffer;
+            std::free(m_buffer);
         }
     }
 
@@ -136,9 +137,7 @@ public:
             T *element = &m_buffer[index];
             return *element;
         } else {
-            // TODO: die
-            T foo;
-            return foo;
+            throw "out of bounds";
         }
     }
 
@@ -157,5 +156,4 @@ public:
     // TODO: insert_at(T thing, size_t index)
 };
 
-#define _BUFFER_HH
 #endif

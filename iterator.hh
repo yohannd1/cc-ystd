@@ -1,4 +1,5 @@
 #ifndef _ITERATOR_HH
+#define _ITERATOR_HH
 
 template <typename T>
 class Iterator {
@@ -67,5 +68,4 @@ public:
     }
 };
 
-#define _ITERATOR_HH
 #endif

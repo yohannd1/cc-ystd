@@ -1,45 +1,38 @@
 #ifndef _ALLOCATOR_HH
+#define _ALLOCATOR_HH
 
 #include <cstdlib>
 
 class Allocator {
 public:
-    static void *allocate_bytes(size_t size);
-    static void *reallocate_bytes(void *buffer, size_t new_size);
-
-    template <typename T>
-    static T *allocate_elements(size_t amount);
-
-    template <typename T>
-    static T *reallocate_elements(T *buffer, size_t new_amount);
-
+    static void *alloc(size_t size);
+    static void *realloc(void *buffer, size_t new_size);
     static void free(void *buffer);
 };
 
 class StandardAllocator {
 public:
-    static void *allocate_bytes(size_t size) {
-        return malloc(size);
+    static void *alloc(size_t size) {
+        return std::malloc(size);
     }
 
-    static void *reallocate_bytes(void *buffer, size_t new_size) {
-        return realloc(buffer, new_size);
-    }
-
-    template <typename T>
-    static T *allocate_elements(size_t amount) {
-        return malloc(amount * sizeof (T));
-    }
-
-    template <typename T>
-    static T *reallocate_elements(T *buffer, size_t new_amount) {
-        return realloc(buffer, new_amount * sizeof (T));
+    static void *realloc(void *buffer, size_t new_size) {
+        return std::realloc(buffer, new_size);
     }
 
     static void free(void *buffer) {
-        free(buffer);
+        std::free(buffer);
     }
 };
 
-#define _ALLOCATOR_HH
+template <typename T, typename Allocator>
+static T *alloc_elements(size_t amount) {
+    return (T*) Allocator::alloc(amount * sizeof (T));
+}
+
+template <typename T, typename Allocator>
+static T *realloc_elements(T *buf, size_t new_amount) {
+    return (T*) Allocator::realloc(buf, new_amount * sizeof (T));
+}
+
 #endif
