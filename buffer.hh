@@ -2,6 +2,7 @@
 #define _BUFFER_HH
 
 #include <utility>
+#include "math.hh"
 #include "iterator.hh"
 #include "allocator.hh"
 
@@ -13,18 +14,10 @@ class Buffer {
     size_t m_reserved_len;
 
     /**
-     * Returns the greater of two numbers.
-     */
-    template <typename N>
-    static N max(N x, N y) {
-        return x > y ? x : y;
-    }
-
-    /**
      * Reallocate buffer, if needed.
      */
     void maybe_reallocate() {
-        size_t new_len = max<size_t>(m_reserved_len, m_element_len);
+        size_t new_len = max(m_reserved_len, m_element_len);
 
         if (m_true_len != new_len) {
             m_true_len = new_len;
@@ -47,11 +40,6 @@ class Buffer {
         }
     }
 public:
-    /**
-     * Copying shouldn't be implicit.
-     */
-    Buffer(const Buffer<T>&) = delete;
-
     /**
      * Create a buffer with a reserved minimal size.
      * Useful for preventing too many allocations.
@@ -110,14 +98,23 @@ public:
         m_buffer[m_element_len - 1] = thing;
     }
 
+    template <int n>
+    static Buffer<T> from(const T array[n]) {
+        auto buffer = Buffer<T>::with_reserved_size(n);
+        for (size_t i = 0; i < n; i++) {
+            buffer.push(array[i]);
+        }
+        return buffer;
+    }
+
     /**
      * Pops an element off the buffer and returns it.
      */
-    T pop(T thing) {
+    T pop() {
         if (m_element_len == 0) {
-            // TODO: die
+            throw "out of bounds";
         } else {
-            T thing = std::move(m_buffer[m_element_len - 1]);
+            T thing = m_buffer[m_element_len - 1];
             m_element_len--;
             maybe_reallocate();
 
@@ -139,6 +136,14 @@ public:
         } else {
             throw "out of bounds";
         }
+    }
+
+    inline T *mem_ptr_mut() {
+        return m_buffer;
+    }
+
+    inline const T *mem_ptr() const {
+        return m_buffer;
     }
 
     Iterator<T> begin() {
