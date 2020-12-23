@@ -77,11 +77,11 @@ public:
      * The default constructor for a buffer.
      * By default (if it's not reserved), there is no allocation at creation.
      */
-    Buffer() {
-        m_buffer = nullptr;
-        m_element_len = 0;
-        m_true_len = 0;
-    }
+    Buffer() :
+        m_buffer(nullptr),
+        m_element_len(0),
+        m_true_len(0),
+    {}
 
     ~Buffer() {
         if (m_buffer != nullptr) {
@@ -105,6 +105,13 @@ public:
             buffer.push(array[i]);
         }
         return buffer;
+    }
+
+    static Buffer<T> from_sized_array(const T array[], size_t size) {
+        auto buffer = Buffer<T>::with_reserved_size(size);
+        for (size_t i = 0; i < size; i++) {
+            buffer.push(array[i]);
+        }
     }
 
     /**
