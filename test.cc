@@ -16,7 +16,7 @@ int main() {
 }
 
 void buffer_test() {
-    std::printf("*** BUFFER TEST **********************");
+    std::printf("*** BUFFER TEST **********************\n");
 
     int arr[] = { 10, 20, 30 };
     Buffer<int> buf = Buffer<int>::from_sized_array(arr, 3);
@@ -37,7 +37,7 @@ void buffer_test() {
 }
 
 void string_test() {
-    std::printf("*** STRING TEST **********************");
+    std::printf("*** STRING TEST **********************\n");
 
     auto string = String::from_str("Hello, world");
     std::printf("String: %s\n", string.as_str());
@@ -46,7 +46,7 @@ void string_test() {
 }
 
 void either_test() {
-    std::printf("*** EITHER TEST **********************");
+    std::printf("*** EITHER TEST **********************\n");
 
     auto either = Either<int, float>::left(20);
     std::printf("%d\n", either.unwrap_left());
@@ -55,7 +55,7 @@ void either_test() {
 }
 
 void maybe_test() {
-    std::printf("*** MAYBE TEST **********************");
+    std::printf("*** MAYBE TEST **********************\n");
 
     auto maybe = Maybe<int>::none();
     if (maybe.is_some()) {
@@ -63,6 +63,4 @@ void maybe_test() {
     } else {
         std::printf("None\n");
     }
-
-    std::printf("\n");
 }

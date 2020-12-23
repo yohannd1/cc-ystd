@@ -10,7 +10,7 @@ class Maybe {
         u8 nothing;
         T data;
 
-        ~Data() = delete;
+        ~Data() = default;
     };
 
     bool m_is_some;
@@ -30,8 +30,8 @@ public:
     }
 
     ~Maybe() {
-        if (is_some()) {
-            m_data.~T();
+        if (m_is_some) {
+            m_data.data.~T();
         }
     }
 

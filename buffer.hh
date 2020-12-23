@@ -9,8 +9,8 @@
 template <typename T, typename Allocator = StandardAllocator>
 class Buffer {
     T *m_buffer;
-    size_t m_true_len;
     size_t m_element_len;
+    size_t m_true_len;
     size_t m_reserved_len;
 
     /**
@@ -81,6 +81,7 @@ public:
         m_buffer(nullptr),
         m_element_len(0),
         m_true_len(0),
+        m_reserved_len(0)
     {}
 
     ~Buffer() {
@@ -112,6 +113,8 @@ public:
         for (size_t i = 0; i < size; i++) {
             buffer.push(array[i]);
         }
+
+        return buffer;
     }
 
     /**
