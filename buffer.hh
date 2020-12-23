@@ -6,7 +6,7 @@
 #include "iterator.hh"
 #include "allocator.hh"
 
-template <typename T, typename Allocator = StandardAllocator>
+template <typename T, Allocator<T> A = StandardAllocator<T>>
 class Buffer {
     T *m_buffer;
     size_t m_element_len;
@@ -25,14 +25,14 @@ class Buffer {
             if (m_true_len == 0) {
                 // if it's 0, the previous length was greater (m_true_len != new_len)
                 // so we can free the buffer without worrying if it was null
-                std::free(m_buffer);
+                A::free(m_buffer);
                 m_buffer = nullptr;
             } else {
                 if (m_buffer == nullptr) {
-                    m_buffer = (T*) std::malloc(m_true_len * sizeof (T));
+                    m_buffer = A::alloc(m_true_len);
                     // TODO: null check
                 } else {
-                    m_buffer = (T*) std::realloc(m_buffer, m_true_len * sizeof (T));
+                    m_buffer = A::realloc(m_buffer, m_true_len * sizeof (T));
                     // m_buffer = (T*) Allocator::realloc(m_buffer, m_true_len * sizeof (T));
                     // TODO: null check
                 }
@@ -86,7 +86,7 @@ public:
 
     ~Buffer() {
         if (m_buffer != nullptr) {
-            std::free(m_buffer);
+            A::free(m_buffer);
         }
     }
 
