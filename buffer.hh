@@ -2,6 +2,7 @@
 #define _BUFFER_HH
 
 #include <utility>
+
 #include "math.hh"
 #include "iterator.hh"
 #include "allocator.hh"
@@ -156,15 +157,15 @@ public:
         return m_buffer;
     }
 
-    Iterator<T> begin() {
-        return Iterator<T>::begin(m_buffer, m_element_len);
+    ArrayIter<T> begin() {
+        return ArrayIter<T>::begin(m_buffer, m_element_len);
     }
 
-    Iterator<T> end() {
-        return Iterator<T>::end(m_buffer, m_element_len);
+    ArrayIter<T> end() {
+        return ArrayIter<T>::end(m_buffer, m_element_len);
     }
 
-    // TODO: Iterator<T> iter() {}
+    // TODO: ArrayIter<T> iter() {}
     // TODO: Buffer clone() const
     // TODO: T &operator[](size_t index)
     // TODO: T *get_or_null(size_t index)
