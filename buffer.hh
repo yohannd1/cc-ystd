@@ -4,8 +4,8 @@
 #include <utility>
 
 #include "math.hh"
-#include "iterator.hh"
-#include "allocator.hh"
+#include "iter.hh"
+#include "alloc.hh"
 
 template <typename T, Allocator<T> A = StandardAllocator<T>>
 class Buffer {

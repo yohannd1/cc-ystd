@@ -21,13 +21,6 @@ concept Iterator = requires(Self self, Self other) {
     { self != other } -> std::same_as<bool>;
 };
 
-// template <typename Self, typename Output>
-// concept Iterable = requires(Self self) {
-//     { self.iter() } -> auto Iterator<Output>;
-//     { self.begin() } -> auto Iterator<Output>;
-//     { self.end() } -> auto Iterator<Output>;
-// };
-
 template <typename T>
 class ArrayIter {
     T *m_buffer;
