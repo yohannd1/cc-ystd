@@ -1,39 +1,62 @@
-#ifndef _ALLOCATOR_HH
-#define _ALLOCATOR_HH
+#ifndef _YSL_ALLOC_HH
+#define _YSL_ALLOC_HH
 
 #include <cstdlib>
 #include <concepts>
 
-template <typename Self, typename T>
-concept Allocator = requires(size_t size, T *buffer) {
-    { Self::alloc(size) } -> std::same_as<T*>;
-    { Self::realloc(buffer, size) } -> std::same_as<T*>;
-    { Self::free(buffer) } -> std::same_as<void>;
-};
+namespace ysl {
+    template <typename Self>
+    concept Allocator = requires(size_t size, void *buffer) {
+        { Self::alloc(size) } -> std::same_as<void*>;
+        { Self::realloc(buffer, size) } -> std::same_as<void*>;
+        { Self::free(buffer) };
+    };
 
-template <typename T>
-struct StandardAllocator {
-    static T *alloc(size_t size) {
-        return (T*) std::malloc(size);
-    }
+    struct LibcAllocator {
+        static auto alloc(size_t size) -> void* { return std::malloc(size); }
+        static auto realloc(void *buffer, size_t new_size) -> void* { return std::realloc(buffer, new_size); }
+        static auto free(void *buffer) -> void { std::free(buffer); }
+    };
 
-    static T *realloc(void *buffer, size_t new_size) {
-        return (T*) std::realloc(buffer, new_size);
-    }
+    template <typename T, Allocator Alloc = LibcAllocator>
+    class ManualFree {
+    private:
+        T *buf_ptr;
 
-    static void free(void *buffer) {
-        std::free(buffer);
-    }
-};
+        explicit ManualFree(T *buf): buf_ptr(buf) {}
+    public:
+        ManualFree() = delete;
+        ManualFree(const ManualFree<T, Alloc>&) = delete;
 
-template <typename T, Allocator<T> A>
-static T *alloc_elements(size_t amount) {
-    return (T*) A::alloc(amount * sizeof (T));
-}
+        static auto from_buf(T *buf) -> ManualFree<T, Alloc> {
+            return ManualFree(buf);
+        }
 
-template <typename T, Allocator<T> A>
-static T *realloc_elements(T *buf, size_t new_amount) {
-    return (T*) A::realloc(buf, new_amount * sizeof (T));
+        static auto with_element(T element) -> ManualFree<T, Alloc> {
+            T *buf = (T*) Alloc::alloc(sizeof (T));
+            *buf = element;
+
+            return ManualFree<T, Alloc>::from_buf(buf);
+        }
+
+        auto shallow_copy() const -> ManualFree<T, Alloc> {
+            return ManualFree::from_buf(this->buf_ptr);
+        }
+
+        // TODO: auto deep_copy() const -> ManualFree<T, Alloc>;
+
+        inline auto as_ptr() -> T* { return this->buf_ptr; }
+        inline auto as_ptr() const -> const T* { return this->buf_ptr; }
+        inline auto as_ref() -> T& { return *this->buf_ptr; }
+        inline auto as_ref() const -> const T& { return *this->buf_ptr; }
+
+        inline auto operator->() -> T* { return this->buf_ptr; }
+        inline auto operator->() const -> const T* { return this->buf_ptr; }
+        inline auto operator&() -> T* { return this->buf_ptr; }
+        inline auto operator&() const -> const T* { return this->buf_ptr; }
+        inline auto operator*() -> T& { return *this->buf_ptr; }
+        inline auto operator*() const -> const T& { return *this->buf_ptr; }
+    };
 }
 
 #endif

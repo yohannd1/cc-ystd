@@ -1,14 +1,16 @@
-#ifndef _MATH_HH
-#define _MATH_HH
+#ifndef _YSL_MATH_HH
+#define _YSL_MATH_HH
 
-template <typename N>
-static N max(N x, N y) {
-    return x > y ? x : y;
-}
+namespace ysl {
+    template <typename N>
+    static auto max(N x, N y) -> N {
+        return x > y ? x : y;
+    }
 
-template <typename N>
-static N min(N x, N y) {
-    return x < y ? x : y;
+    template <typename N>
+    static auto min(N x, N y) -> N {
+        return x < y ? x : y;
+    }
 }
 
 #endif

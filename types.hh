@@ -1,5 +1,5 @@
-#ifndef _TYPES_HH
-#define _TYPES_HH
+#ifndef _YSL_TYPES_HH
+#define _YSL_TYPES_HH
 
 #include <cstdlib>
 

@@ -23,7 +23,7 @@ void buffer_test() {
     std::printf("*** BUFFER TEST **********************\n");
 
     int arr[] = { 10, 20, 30 };
-    Buffer<int> buf = Buffer<int>::from_sized_array(arr, 3);
+    auto buf = ysl::Buffer<int>::from_sized_array(arr, 3);
 
     std::printf("Without iterators: ");
     for (size_t i = 0; i < buf.len(); i++) {
@@ -43,7 +43,7 @@ void buffer_test() {
 void string_test() {
     std::printf("*** STRING TEST **********************\n");
 
-    auto string = String::from_str("Hello, world");
+    auto string = ysl::String::from_str("Hello, world");
     std::printf("String: %s\n", string.as_str());
 
     std::printf("\n");
@@ -52,7 +52,7 @@ void string_test() {
 void either_test() {
     std::printf("*** EITHER TEST **********************\n");
 
-    auto either = Either<int, float>::left(20);
+    auto either = ysl::Either<int, float>::left(20);
     std::printf("%d\n", either.unwrap_left());
 
     std::printf("\n");
@@ -61,7 +61,7 @@ void either_test() {
 void maybe_test() {
     std::printf("*** MAYBE TEST **********************\n");
 
-    auto maybe = Maybe<int>::none();
+    auto maybe = ysl::Maybe<int>::none();
     if (maybe.is_some()) {
         std::printf("Some: %d\n", maybe.unwrap());
     } else {

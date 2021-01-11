@@ -2,39 +2,44 @@
 #define _YSL_SHARED_HH
 
 #include <cstdlib>
-#include "heap_tools.hh"
+#include "alloc.hh"
 
 namespace ysl {
     template <typename T>
-    class Shared {
-    private:
-        struct Inner {
-            mutable size_t owner_count;
-            T data;
-        };
-
-        ManualFree<Inner> heap;
-    public:
-        Shared() {
-            this->heap->owner_count = 1;
-        }
-
-        Shared(T data) {
-            this->heap.get_buf()->owner_count = 1;
-            this->heap.get_buf()->data = data;
-        }
-
-        Shared(const Shared<T>& shared) {
-            shared.heap.get_buf()->owner_count += 1;
-            this->heap = shared.heap.shallow_copy();
-        }
-
-        auto operator&() const -> const T* { return &heap->data; }
-        auto operator*() const -> const T& { return heap.get_buf()->data; }
+    struct _SharedInner {
+        mutable size_t owner_count;
+        T data;
     };
 
-    template <typename T>
-    Shared<T> own(const Shared<T> &shared) {
+    template <typename T, Allocator Alloc = LibcAllocator>
+    class Shared {
+    private:
+        ManualFree<_SharedInner<T>, Alloc> shared_buf;
+    public:
+        Shared(): shared_buf(
+            ManualFree<T, Alloc>::with_element(_SharedInner {
+                .owner_count = 1,
+                .data = T() }))
+        {}
+
+        Shared(T data): shared_buf(
+            ManualFree<_SharedInner<T>, Alloc>::with_element(_SharedInner {
+                .owner_count = 1,
+                .data = data }))
+        {}
+
+        Shared(const Shared<T, Alloc>& shared):
+            shared_buf(shared.shared_buf.shallow_copy())
+        {
+            this->shared_buf->owner_count += 1;
+        }
+
+        auto operator&() const -> const T* { return &this->shared_buf->data; }
+        auto operator*() const -> const T& { return this->shared_buf->data; }
+    };
+
+    template <typename T, Allocator Alloc = LibcAllocator>
+    Shared<T, Alloc> own(const Shared<T> &shared) {
         return shared;
     }
 }

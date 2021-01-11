@@ -1,5 +1,5 @@
-#ifndef _ITERATOR_HH
-#define _ITERATOR_HH
+#ifndef _YSL_ITERATOR_HH
+#define _YSL_ITERATOR_HH
 
 #include <concepts>
 
