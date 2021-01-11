@@ -1,8 +1,10 @@
 #ifndef _EXCEPTION_HH
 #define _EXCEPTION_HH
 
-#include <cstring>
+// #include <cstring>
 #include <exception>
+
+#include "string.hh"
 
 class Exception : public std::exception {
     struct PtrWrapper {

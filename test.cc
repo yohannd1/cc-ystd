@@ -1,18 +1,22 @@
 #include <cstdio>
+
 #include "buffer.hh"
 #include "string.hh"
 #include "variant.hh"
+#include "shared.hh"
 
 void buffer_test();
 void string_test();
 void either_test();
 void maybe_test();
+void shared_test();
 
 int main() {
     buffer_test();
     string_test();
     either_test();
     maybe_test();
+    shared_test();
 }
 
 void buffer_test() {
@@ -63,4 +67,13 @@ void maybe_test() {
     } else {
         std::printf("None\n");
     }
+}
+
+void shared_test() {
+    std::printf("*** SHARED TEST *********************\n");
+
+    ysl::Shared<int> my_shared(50);
+    ysl::Shared<int> my_same_shared = ysl::own(my_shared);
+
+    std::printf("%d = %d\n", *my_shared, *my_same_shared);
 }
