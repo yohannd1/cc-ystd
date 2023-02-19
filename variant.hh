@@ -1,8 +1,8 @@
 #ifndef _YSL_VARIANT_HH
 #define _YSL_VARIANT_HH
 
-#include "types.hh"
 #include "exception.hh"
+#include "types.hh"
 
 namespace ysl {
     template <typename T>
@@ -17,18 +17,13 @@ namespace ysl {
         bool m_is_some;
         Data m_data;
 
-        Maybe(T data)
-            : m_is_some(true), m_data({ .data = data }) {}
-        Maybe()
-            : m_is_some(false), m_data({ .nothing = '\0' }) {}
-    public:
-        static Maybe<T> some(T data) {
-            return Maybe<T>(data);
-        }
+        Maybe(T data) : m_is_some(true), m_data({ .data = data }) {}
+        Maybe() : m_is_some(false), m_data({ .nothing = '\0' }) {}
 
-        static Maybe<T> none() {
-            return Maybe<T>();
-        }
+    public:
+        static Maybe<T> some(T data) { return Maybe<T>(data); }
+
+        static Maybe<T> none() { return Maybe<T>(); }
 
         ~Maybe() {
             if (m_is_some) {
@@ -36,31 +31,37 @@ namespace ysl {
             }
         }
 
-        inline bool is_some() const {
-            return m_is_some;
-        }
+        inline bool is_some() const { return m_is_some; }
 
         T unwrap() const {
             if (is_some()) {
                 return m_data.data;
             } else {
-                throw Exception("failed to unwrap a Maybe class");
+                throw Exception("failed to unwrap a Maybe instance");
             }
         }
 
-        const T *inside_ptr() const {
+        T unwrap_or(T default_) const {
             if (is_some()) {
-                return &m_data.data;
+                return m_data.data;
             } else {
-                throw Exception("failed to unwrap a Maybe class");
+                return default_;
             }
         }
 
-        T *inside_ptr_mut() {
+        const T* inside_ptr() const {
             if (is_some()) {
                 return &m_data.data;
             } else {
-                throw Exception("failed to unwrap a Maybe class");
+                throw Exception("failed to unwrap a Maybe instance");
+            }
+        }
+
+        T* inside_ptr_mut() {
+            if (is_some()) {
+                return &m_data.data;
+            } else {
+                throw Exception("failed to unwrap a Maybe instance");
             }
         }
     };
@@ -83,6 +84,7 @@ namespace ysl {
         Data m_data;
 
         Either() = default;
+
     public:
         static Either<T, E> left(T left) {
             Either<T, E> either;
@@ -106,19 +108,16 @@ namespace ysl {
             }
         }
 
-        inline bool is_left() const {
-            return m_side == Side::Left;
-        }
+        inline bool is_left() const { return m_side == Side::Left; }
 
-        inline bool is_right() const {
-            return m_side == Side::Right;
-        }
+        inline bool is_right() const { return m_side == Side::Right; }
 
         T unwrap_left() const {
             if (is_left()) {
                 return m_data.left;
             } else {
-                throw Exception("Either class: tried to get right value when value was on left side");
+                throw Exception(
+                    "Either class: tried to get right value when value was on left side");
             }
         }
 
@@ -126,42 +125,47 @@ namespace ysl {
             if (is_right()) {
                 return m_data.right;
             } else {
-                throw Exception("Either class: tried to get left value when value was on right side");
+                throw Exception(
+                    "Either class: tried to get left value when value was on right side");
             }
         }
 
-        const T *left_ptr() const {
+        const T* left_ptr() const {
             if (is_left()) {
                 return &m_data.left;
             } else {
-                throw Exception("Either class: tried to get right value when value was on left side");
+                throw Exception(
+                    "Either class: tried to get right value when value was on left side");
             }
         }
 
-        T *left_ptr_mut() {
+        T* left_ptr_mut() {
             if (is_left()) {
                 return &m_data.left;
             } else {
-                throw Exception("Either class: tried to get right value when value was on left side");
+                throw Exception(
+                    "Either class: tried to get right value when value was on left side");
             }
         }
 
-        const T *right_ptr() const {
+        const T* right_ptr() const {
             if (is_right()) {
                 return &m_data.right;
             } else {
-                throw Exception("Either class: tried to get right value when value was on left side");
+                throw Exception(
+                    "Either class: tried to get right value when value was on left side");
             }
         }
 
-        T *right_ptr_mut() {
+        T* right_ptr_mut() {
             if (is_right()) {
                 return &m_data.right;
             } else {
-                throw Exception("Either class: tried to get right value when value was on left side");
+                throw Exception(
+                    "Either class: tried to get right value when value was on left side");
             }
         }
     };
-}
+} // namespace ysl
 
 #endif

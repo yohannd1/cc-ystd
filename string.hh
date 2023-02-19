@@ -8,10 +8,9 @@ namespace ysl {
     class GenericString {
         Buffer<C> m_buffer;
         bool m_has_null_term;
+
     public:
-        GenericString() : m_has_null_term(false) {
-            m_buffer = Buffer<C>();
-        }
+        GenericString() : m_has_null_term(false) { m_buffer = Buffer<C>(); }
 
         template <size_t n>
         static GenericString<C> from_sized(const C array[n]) {
@@ -33,7 +32,7 @@ namespace ysl {
             } else {
                 m_has_null_term = true;
             }
-        
+
             // push characters from the string until '\0' is found
             for (const C *ch = array; *ch; ch++) {
                 // TODO: make a push_sized for buffer.hh so it doesn't reallocate for every char
@@ -72,24 +71,16 @@ namespace ysl {
             m_buffer.push('\0');
         }
 
-        inline size_t len() const {
-            return m_has_null_term ? m_buffer.len() - 1 : 0;
-        }
-    
-        inline size_t len_with_null() const {
-            return m_buffer.len();
-        }
+        inline size_t len() const { return m_has_null_term ? m_buffer.len() - 1 : 0; }
 
-        const C *as_str() const {
-            return m_buffer.mem_ptr();
-        }
+        inline size_t len_with_null() const { return m_buffer.len(); }
 
-        C *as_str_mut() {
-            return m_buffer.mem_ptr_mut();
-        }
+        const C *as_str() const { return m_buffer.mem_ptr(); }
+
+        C *as_str_mut() { return m_buffer.mem_ptr_mut(); }
     };
 
     using String = GenericString<char>;
-}
+} // namespace ysl
 
 #endif

@@ -1,16 +1,21 @@
 #ifndef _YSL_BUFFER_HH
 #define _YSL_BUFFER_HH
 
+#include "alloc.hh"
+#include "iter.hh"
+#include "math.hh"
+#include "slice.hh"
+
 #include <utility>
 
-#include "math.hh"
-#include "iter.hh"
-#include "alloc.hh"
-
 namespace ysl {
+    namespace err {
+        struct AllocError {};
+    } // namespace err
+
     template <typename T, Allocator A = LibcAllocator>
     class Buffer {
-        T *m_buffer;
+        T* m_buffer;
         size_t m_element_len;
         size_t m_true_len;
         size_t m_reserved_len;
@@ -31,22 +36,27 @@ namespace ysl {
                     m_buffer = nullptr;
                 } else {
                     if (m_buffer == nullptr) {
-                        m_buffer = (T*) A::alloc(m_true_len * sizeof (T));
+                        m_buffer = (T*) A::alloc(m_true_len * sizeof(T));
                         // TODO: null check
                     } else {
-                        m_buffer = (T*) A::realloc(m_buffer, m_true_len * sizeof (T));
-                        // m_buffer = (T*) Allocator::realloc(m_buffer, m_true_len * sizeof (T));
-                        // TODO: null check
+                        T* new_alloc = (T*) A::realloc(m_buffer, m_true_len * sizeof(T));
+
+                        if (new_alloc == nullptr) {
+                            throw err::AllocError {};
+                        } else {
+                            m_buffer = new_alloc;
+                        }
                     }
                 }
             }
         }
+
     public:
         /**
          * Create a buffer with a reserved minimal size.
          * Useful for preventing too many allocations.
          */
-        static Buffer<T, A> with_reserved_size(size_t size) {
+        static auto with_reserved_size(size_t size) -> Buffer<T, A> {
             Buffer<T, A> buffer;
             buffer.reserve(size);
             return buffer;
@@ -60,31 +70,26 @@ namespace ysl {
             maybe_reallocate();
         }
 
+        operator ysl::ConstSlice<T>() const { return ysl::MutSlice(m_buffer, m_element_len); }
+
+        operator ysl::MutSlice<T>() { return ysl::MutSlice(m_buffer, m_element_len); }
+
         /**
          * Returns the true length currently allocated by this buffer.
          * Output might be different than the len() method if it's reserved.
          */
-        inline size_t true_alloc_len() const {
-            return m_true_len;
-        }
+        inline size_t true_alloc_len() const { return m_true_len; }
 
         /**
          * Returns the amount of elements currently stored on this buffer.
          */
-        inline size_t len() const {
-            return m_element_len;
-        }
+        inline size_t len() const { return m_element_len; }
 
         /**
          * The default constructor for a buffer.
          * By default (if it's not reserved), there is no allocation at creation.
          */
-        Buffer() :
-            m_buffer(nullptr),
-            m_element_len(0),
-            m_true_len(0),
-            m_reserved_len(0)
-        {}
+        Buffer() : m_buffer(nullptr), m_element_len(0), m_true_len(0), m_reserved_len(0) {}
 
         ~Buffer() {
             if (m_buffer != nullptr) {
@@ -102,7 +107,7 @@ namespace ysl {
         }
 
         template <int n>
-        static Buffer<T, A> from(const T array[n]) {
+        static auto from(const T array[n]) -> Buffer<T, A> {
             auto buffer = Buffer<T, A>::with_reserved_size(n);
             for (size_t i = 0; i < n; i++) {
                 buffer.push(array[i]);
@@ -110,7 +115,7 @@ namespace ysl {
             return buffer;
         }
 
-        static Buffer<T, A> from_sized_array(const T array[], size_t size) {
+        static auto from_sized_array(const T array[], size_t size) -> Buffer<T, A> {
             auto buffer = Buffer<T, A>::with_reserved_size(size);
             for (size_t i = 0; i < size; i++) {
                 buffer.push(array[i]);
@@ -122,9 +127,9 @@ namespace ysl {
         /**
          * Pops an element off the buffer and returns it.
          */
-        T pop() {
+        auto pop() -> T {
             if (m_element_len == 0) {
-                throw "out of bounds";
+                throw err::IndexOutOfBounds {};
             } else {
                 T thing = m_buffer[m_element_len - 1];
                 m_element_len--;
@@ -137,42 +142,60 @@ namespace ysl {
         /**
          * Checks if the specified index exists at this buffer.
          */
-        inline bool inside_bounds(size_t index) const {
-            return index < m_element_len;
-        }
+        inline auto inside_bounds(size_t index) const -> bool { return index < m_element_len; }
 
-        T &operator[](size_t index) {
+        auto operator[](size_t index) -> T& {
             if (inside_bounds(index)) {
-                T *element = &m_buffer[index];
-                return *element;
+                return m_buffer[index];
             } else {
-                throw "out of bounds";
+                throw err::IndexOutOfBounds {};
             }
         }
 
-        inline T *mem_ptr_mut() {
-            return m_buffer;
+        auto operator[](size_t index) const -> const T& {
+            if (inside_bounds(index)) {
+                return m_buffer[index];
+            } else {
+                throw err::IndexOutOfBounds {};
+            }
         }
 
-        inline const T *mem_ptr() const {
-            return m_buffer;
+        auto get_or_null(size_t index) -> T* {
+            if (inside_bounds(index)) {
+                return &m_buffer[index];
+            } else {
+                throw err::IndexOutOfBounds {};
+            }
         }
 
-        ArrayIter<T> begin() {
-            return ArrayIter<T>::begin(m_buffer, m_element_len);
+        auto get_or_null(size_t index) const -> const T* {
+            if (inside_bounds(index)) {
+                return &m_buffer[index];
+            } else {
+                throw err::IndexOutOfBounds {};
+            }
         }
 
-        ArrayIter<T> end() {
-            return ArrayIter<T>::end(m_buffer, m_element_len);
-        }
+        inline auto mem_ptr_mut() -> T* { return m_buffer; }
 
-        // TODO: ArrayIter<T> iter() {}
-        // TODO: Buffer clone() const
-        // TODO: T &operator[](size_t index)
-        // TODO: T *get_or_null(size_t index)
-        // TODO: insert_at(T thing, size_t index)
+        inline auto mem_ptr() const -> const T* { return m_buffer; }
+
+        inline auto iter() -> ArrayIter<T> { return ArrayIter<T>::begin(m_buffer, m_element_len); }
+
+        inline auto begin() -> ArrayIter<T> { return ArrayIter<T>::begin(m_buffer, m_element_len); }
+
+        inline auto end() -> ArrayIter<T> { return ArrayIter<T>::end(m_buffer, m_element_len); }
+
+        // TODO: auto clone() const -> Buffer<T, A> requires Clone<T> {}
+
+        auto insert_at(size_t index, T element) {
+            if (index > m_element_len) {
+                throw err::IndexOutOfBounds {};
+            } else {
+                return; // TODO
+            }
+        }
     };
-}
-
+} // namespace ysl
 
 #endif

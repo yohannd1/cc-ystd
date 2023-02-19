@@ -11,6 +11,6 @@ namespace ysl {
     static auto min(N x, N y) -> N {
         return x < y ? x : y;
     }
-}
+} // namespace ysl
 
 #endif
